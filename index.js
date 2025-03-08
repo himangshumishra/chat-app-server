@@ -18,39 +18,42 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Get the allowed origins
+// Get the allowed origins - Add your Railway and frontend URLs
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'https://chat.mishra.codes',
+  'https://chat-app-client-git-main-mishraji.vercel.app' 
 ].filter(Boolean);
 
-// CORS middleware
+// CORS middleware with updated configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('Allowing CORS for:', origin);
-      callback(null, true);
-    }
-  },
+  origin: '*', // More permissive for testing
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
-// Body parser middleware
-app.use(express.json());
+// Body parser middleware with increased limit
+app.use(express.json({ limit: '10mb' }));
 
 // Connect to MongoDB
 connectDB();
 
-// Initialize Socket.IO
+// Initialize Socket.IO with updated configuration for Railway
 const io = socketIo(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: '*', // More permissive for testing
     methods: ['GET', 'POST'],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  path: '/socket.io/', // Explicit path
+  connectionStateRecovery: {
+    // Enables socket state recovery
+    maxDisconnectionDuration: 2 * 60 * 1000,
+    skipMiddlewares: true,
+  }
 });
 
 // Initialize socket service
@@ -77,9 +80,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-// Start server
+// Start server - Update to listen on 0.0.0.0
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`CORS enabled for: ${allowedOrigins.join(', ')}`);
 });
