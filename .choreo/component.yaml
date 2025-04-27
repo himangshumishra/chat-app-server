@@ -1,0 +1,36 @@
+name: chatr-app-server
+version: 1.0.0
+type: API
+description: "Chat Application Backend API"
+metadata:
+  labels:
+    type: nodejs
+    language: javascript
+  icon: https://raw.githubusercontent.com/wso2/choreo-samples/main/icons/node-js.svg
+build:
+  triggerOn:
+    - push:
+        branches:
+          - main
+  env:
+    # Base environment for building the component
+    - name: NODE_ENV
+      value: "production"
+deploy:
+  entries:
+    - label: Default
+      runtime: Docker
+      port: 5000
+      env:
+        # Port where the application will run
+        - name: PORT
+          value: "5000"
+        # Database connection string 
+        - name: MONGODB_URI
+          secure: true
+        # JWT secret for authentication
+        - name: JWT_SECRET
+          secure: true
+        # Frontend client URL
+        - name: CLIENT_URL
+          value: "https://chat.mishra.codes" 
